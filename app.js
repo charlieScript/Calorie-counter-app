@@ -13,9 +13,9 @@ const ItemCtrl = (function () {
     // DATA STRUCTURE / STATE
     const data = {
         items: [
-            {id: 0, name: 'Rice and Beans', calories: 1200},
-            {id: 1, name: 'Bread', calories: 400},
-            {id: 2, name: 'Egg', calories: 300}
+            // {id: 0, name: 'Rice and Beans', calories: 1200},
+            // {id: 1, name: 'Bread', calories: 400},
+            // {id: 2, name: 'Egg', calories: 300}
         ],
         currentItem: null,
         totalCalories: 0
@@ -46,6 +46,20 @@ const ItemCtrl = (function () {
 
             return newItem;
         },
+        getTotalCalories: function (params) {
+            let total = 0;
+
+            // loop and total calories
+            data.items.forEach(function (items) {
+                total += items.calories;
+            });
+
+            // set total cal in data strucure
+            data.totalCalories = total;
+
+            // return total
+            return total;
+        },
         logData: function () {
             return data;
         }
@@ -61,7 +75,8 @@ const UICtrl = (function () {
         itemList: '#item-list',
         addBtn: '.add-btn',
         itemNameInput: '#item-name',
-        itemCaloriesInput: '#item-calories'
+        itemCaloriesInput: '#item-calories',
+        totalCalories: '.total-calories'
     }
 
     // public method
@@ -88,7 +103,30 @@ const UICtrl = (function () {
                 calories: document.querySelector(UIselectors.itemCaloriesInput).value
             }
         },
-
+        addListItem: function(item) {
+            //show the list
+            document.querySelector(UIselectors.itemList).style.display = 'block';
+            // create li elemnt
+            const li = document.createElement('li');
+            li.className = 'collection-item'
+            li.id = `item-${item.id}`;
+            li.innerHTML = `<strong>${item.name}: </strong> <em>${item.calories} Calories</em>
+            <a href="#" class="secondary-content">
+              <i class="edit-item fa fa-pencil"></i>
+            </a>`;
+            // insert item
+            document.querySelector(UIselectors.itemList).insertAdjacentElement('beforeend', li)
+        },
+        clearInput: function(){
+            document.querySelector(UIselectors.itemNameInput).value = '';
+            document.querySelector(UIselectors.itemCaloriesInput).value = '';
+        },
+        hideList: function(){
+            document.querySelector(UIselectors.itemList).style.display = 'none';
+        },
+        showTotalCalories: function(totalCalories) {
+            document.querySelector(UIselectors.totalCalories).textContent = totalCalories;
+        },
         getSelectors: function() {
             return UIselectors;
         }
@@ -116,6 +154,19 @@ const App = (function (ItemCtrl, UICtrl) {
         if (input.name !== '' && input.calories !== '')  {
             // add item 
             const newItem = ItemCtrl.addItem(input.name, input.calories);
+
+            // add item to UI list
+            UICtrl.addListItem(newItem);
+
+            // get total
+            const totalCalories = ItemCtrl.getTotalCalories();
+
+            // add total calories to UI
+            UICtrl.showTotalCalories(totalCalories)
+
+            // clear fields
+            UICtrl.clearInput();
+
         }
 
         e.preventDefault();
@@ -127,9 +178,20 @@ const App = (function (ItemCtrl, UICtrl) {
             // fetch items from data structure
             const item = ItemCtrl.getItems();
 
-            //populate items list 
-            UICtrl.populateItemList(item)
+            // chek if any items
+            if (item.length === 0) {
+                UICtrl.hideList();
+            } else {
+                //populate items list 
+                 UICtrl.populateItemList(item)
+            }
 
+            // add item to UI list
+            UICtrl.addListItem(newItem);
+
+            // get total
+            const totalCalories = ItemCtrl.getTotalCalories();
+            
             // loadeventlisterners
             loadEventListerners()
         }
